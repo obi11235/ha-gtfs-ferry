@@ -90,7 +90,7 @@ class GTFSFerrySensor(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return due_in_minutes(datetime.combine(self._current_data[0].stop.date, self._current_data[0].stop.departure_time))
+        return due_in_minutes(datetime.combine(self._current_data[0].date, self._current_data[0].departure_time))
 
     @property
     def extra_state_attributes(self):
