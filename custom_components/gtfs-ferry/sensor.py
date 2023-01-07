@@ -90,9 +90,12 @@ class GTFSFerrySensor(Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        timestamp = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time)
-        minutes = due_in_minutes(timestamp)
-        _LOGGER.info("TIMESTAMP {0}, due_in_minutes {1}".format(timestamp, minutes))
+        if len(self._current_data) > 0:
+            timestamp = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time)
+            minutes = due_in_minutes(timestamp)
+            _LOGGER.debug("TIMESTAMP {0}, due_in_minutes {1}".format(timestamp, minutes))
+        else:
+            minutes = '-'
         return minutes
 
     @property
@@ -102,6 +105,8 @@ class GTFSFerrySensor(Entity):
         #     ATTR_STATION_NAME: self.data.info[self._station_id].name,
         # }
         attrs = {}
+        if len(self._current_data) > 0:
+            attrs['Due at'] = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time).strftime('%I:%M %p') if len(self._current_data) > 0 else '-'
         return attrs
 
     @property
