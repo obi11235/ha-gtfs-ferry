@@ -1,0 +1,10 @@
+{
+    "domain": "gtfs",
+    "name": "GTFS Ferry",
+    "documentation": "",
+    "issue_tracker": "",
+    "dependencies": [],
+    "codeowners": ["@obi11235"],
+    "requirements": [],
+    "version": "1.20230106"
+}
