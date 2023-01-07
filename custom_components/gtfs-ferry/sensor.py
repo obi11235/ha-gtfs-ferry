@@ -312,8 +312,11 @@ class GTFSFerry():
                 if entity.HasField('trip_update'):
                     for stop in entity.trip_update.stop_time_update:
                         if entity.trip_update.trip.trip_id in self.stops and str(stop.stop_sequence) in self.stops[entity.trip_update.trip.trip_id]:
-                            self.stops[entity.trip_update.trip.trip_id][str(stop.stop_sequence)].arrival_time_actual = datetime.fromtimestamp(stop.arrival.time).replace(tzinfo=self.timezone).time()
-                            self.stops[entity.trip_update.trip.trip_id][str(stop.stop_sequence)].departure_time_actual = datetime.fromtimestamp(stop.departure.time).replace(tzinfo=self.timezone).time()
+                            # self.stops[entity.trip_update.trip.trip_id][str(stop.stop_sequence)].arrival_time_actual = datetime.fromtimestamp(stop.arrival.time).replace(tzinfo=self.timezone).time()
+                            # self.stops[entity.trip_update.trip.trip_id][str(stop.stop_sequence)].departure_time_actual = datetime.fromtimestamp(stop.departure.time).replace(tzinfo=self.timezone).time()
+                            self.stops[entity.trip_update.trip.trip_id][str(stop.stop_sequence)].arrival_time_actual = datetime.fromtimestamp(stop.arrival.time).replace(tzinfo=None).time()
+                            self.stops[entity.trip_update.trip.trip_id][str(stop.stop_sequence)].departure_time_actual = datetime.fromtimestamp(stop.departure.time).replace(tzinfo=None).time()
+
 
         self.last_rt_update = datetime.now()
     
