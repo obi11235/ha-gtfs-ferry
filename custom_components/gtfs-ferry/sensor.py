@@ -24,7 +24,7 @@ CONF_FERRY_ROUTES_URL = 'ferry_routes_url'
 CONF_FERRY_TRIPS_URL = 'ferry_tripS_url'
 CONF_ICON = 'icon'
 
-CONF_STATIONS = 'stations'
+CONF_DEPARTURES = 'departures'
 CONF_ROUTE_ID = 'route_id'
 CONF_DIRECTION_ID = 'direction_id'
 CONF_STOP_ID = 'stop_id'
@@ -41,7 +41,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_FERRY_TRIPS_URL, default=None): cv.string,
     vol.Optional(CONF_ICON, default=DEFAULT_ICON): cv.string,
 
-    vol.Required(CONF_STATIONS): [{
+    vol.Required(CONF_DEPARTURES): [{
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_ROUTE_ID): cv.string,
         vol.Required(CONF_DIRECTION_ID): cv.string,
@@ -58,13 +58,13 @@ def due_in_minutes(timestamp):
 def setup_platform(hass, config, add_devices, discovery_info=None):
     data = GTFSFerry(dt_util.DEFAULT_TIME_ZONE, config.get(CONF_FERRY_ROUTES_URL), config.get(CONF_FERRY_TRIPS_URL))
     sensors = []
-    for stations in config.get(CONF_STATIONS):
+    for departures in config.get(CONF_DEPARTURES):
         sensors.append(GTFSFerrySensor(
             data,
-            stations.get(CONF_NAME),
-            stations.get(CONF_ROUTE_ID),
-            stations.get(CONF_DIRECTION_ID),
-            stations.get(CONF_STOP_ID),
+            departures.get(CONF_NAME),
+            departures.get(CONF_ROUTE_ID),
+            departures.get(CONF_DIRECTION_ID),
+            departures.get(CONF_STOP_ID),
             config.get(CONF_ICON)
         ))
 
