@@ -21,7 +21,7 @@ import homeassistant.helpers.config_validation as cv
 _LOGGER = logging.getLogger(__name__)
 
 CONF_FERRY_ROUTES_URL = 'ferry_routes_url'
-CONF_FERRY_TRIPS_URL = 'ferry_tripS_url'
+CONF_FERRY_TRIPS_URL = 'ferry_trips_url'
 CONF_ICON = 'icon'
 
 CONF_DEPARTURES = 'departures'
