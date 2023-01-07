@@ -31,10 +31,17 @@ CONF_STOP_ID = 'stop_id'
 
 DEFAULT_ICON = 'mdi:ferry'
 
-ATTR_DUE_IN = "Due in"
-ATTR_DUE_AT = "Due at"
-ATTR_NEXT_UP = "Next Service"
-ATTR_NEXT_UP_DUE_IN = "Next Service Due in"
+ATTR_DUE_IN = "Departure scheduled in"
+ATTR_DUE_AT = "Departure scheduled at"
+ATTR_DUE_IN_ACTUAL = "Departure actualy in"
+ATTR_DUE_AT_ACTUAL = "Departure actualy at"
+
+ATTR_NEXT_UP = "Next Service Departure"
+ATTR_NEXT_UP_DUE_AT = "Next Service Departure at"
+ATTR_NEXT_UP_ACTUAL = "Next Service Departure actualy in"
+ATTR_NEXT_UP_DUE_AT_ACTUAL = "Next Service Departure actualy at"
+
+
 
 MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=60)
 TIME_STR_FORMAT = "%H:%M"
@@ -105,10 +112,29 @@ class GTFSFerrySensor(Entity):
         attrs = {}
         if len(self._current_data) > 0:
             attrs[ATTR_DUE_IN] = self.state
-            attrs[ATTR_DUE_AT] = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time).strftime('%I:%M %p') if len(self._current_data) > 0 else '-'
+            attrs[ATTR_DUE_AT] = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time).strftime('%I:%M %p')
+
+            if self._current_data[0].departure_time_actual != None:
+                attrs[ATTR_DUE_IN_ACTUAL] = due_in_minutes(datetime.combine(self._current_data[0].date, self._current_data[0].departure_time_actual))
+                attrs[ATTR_DUE_AT_ACTUAL] = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time_actual).strftime('%I:%M %p')
+        else:
+            attrs[ATTR_DUE_IN] = '-'
+            attrs[ATTR_DUE_AT] = '-'
+            attrs[ATTR_DUE_IN_ACTUAL] = '-'
+            attrs[ATTR_DUE_AT_ACTUAL] = '-'
+
         if len(self._current_data) > 1:
-            attrs[ATTR_NEXT_UP] = due_in_minutes(datetime.combine(self._current_data[1].date, self._current_data[1].departure_time)) if len(self._current_data) > 1 else '-'
-            attrs[ATTR_NEXT_UP_DUE_IN] = datetime.combine(self._current_data[1].date, self._current_data[1].departure_time).strftime('%I:%M %p') if len(self._current_data) > 1 else '-'
+            attrs[ATTR_NEXT_UP] = due_in_minutes(datetime.combine(self._current_data[1].date, self._current_data[1].departure_time))
+            attrs[ATTR_NEXT_UP_DUE_AT] = datetime.combine(self._current_data[1].date, self._current_data[1].departure_time).strftime('%I:%M %p')
+            if self._current_data[1].departure_time_actual != None:
+                attrs[ATTR_NEXT_UP_ACTUAL] = due_in_minutes(datetime.combine(self._current_data[1].date, self._current_data[1].departure_time_actual))
+                attrs[ATTR_NEXT_UP_DUE_AT_ACTUAL] = datetime.combine(self._current_data[1].date, self._current_data[1].departure_time_actual).strftime('%I:%M %p')
+        else:
+            attrs[ATTR_NEXT_UP] = '-'
+            attrs[ATTR_NEXT_UP_DUE_AT] = '-'
+            attrs[ATTR_NEXT_UP_ACTUAL] = '-'
+            attrs[ATTR_NEXT_UP_DUE_AT_ACTUAL] = '-'
+
         return attrs
 
     @property
@@ -284,9 +310,9 @@ class GTFSFerry():
             for entity in feed.entity:
                 if entity.HasField('trip_update'):
                     for stop in entity.trip_update.stop_time_update:
-                        if entity.trip_update.trip.trip_id in self.stops and stop.stop_sequence in self.stops[entity.trip_update.trip.trip_id]:
-                            self.stops[entity.trip_update.trip.trip_id][stop.stop_sequence].arrival_time_actual = datetime.fromtimestamp(stop.arrival.time).replace(tzinfo=ZoneInfo("US/Eastern")).time()
-                            self.stops[entity.trip_update.trip.trip_id][stop.stop_sequence].departure_time_actual = datetime.fromtimestamp(stop.departure.time).replace(tzinfo=ZoneInfo("US/Eastern")).time()
+                        if entity.trip_update.trip.trip_id in self.stops and str(stop.stop_sequence) in self.stops[entity.trip_update.trip.trip_id]:
+                            self.stops[entity.trip_update.trip.trip_id][str(stop.stop_sequence)].arrival_time_actual = datetime.fromtimestamp(stop.arrival.time).replace(tzinfo=ZoneInfo("US/Eastern")).time()
+                            self.stops[entity.trip_update.trip.trip_id][str(stop.stop_sequence)].departure_time_actual = datetime.fromtimestamp(stop.departure.time).replace(tzinfo=ZoneInfo("US/Eastern")).time()
 
         self.last_rt_update = datetime.now()
     
@@ -300,14 +326,18 @@ class GTFSFerry():
                 for stop_sequence in self.stops[trip.trip_id]:
                     stop = self.stops[trip.trip_id][stop_sequence]
                     if stop.stop_id == stop_id:
-                        if stop.departure_time > now_local.time() and trip.service_id == self.today_service_id:
+                        # There is an edge case if the real time departure time keeps toggling before and after the current time
+                        # then the stop will apear and dissapear from stops remaining.
+                        if (stop.departure_time > now_local.time() or (stop.departure_time_actual != None and stop.departure_time_actual > now_local.time())) and trip.service_id == self.today_service_id:
                             cur = deepcopy(stop)
                             cur.date = now_local.date()
                             stops_remaining.append(cur)
 
-                        if stop.departure_time > tomorrow_local.time() and trip.service_id == self.tomorrow_service_id:
+                        if trip.service_id == self.tomorrow_service_id:
                             cur = deepcopy(stop)
                             cur.date = tomorrow_local.date()
+                            cur.arrival_time_actual = None
+                            cur.departure_time_actual = None
                             stops_remaining.append(cur)
 
         stops_remaining.sort(key=lambda t: datetime.combine(t.date, t.departure_time))
