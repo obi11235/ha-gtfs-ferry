@@ -52,7 +52,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 
 def due_in_minutes(timestamp):
     """Get the remaining minutes from now until a given datetime object."""
-    diff = timestamp - dt_util.utcnow().replace(tzinfo=None)
+    diff = timestamp - dt_util.now().replace(tzinfo=None)
     return int(diff.total_seconds() / 60)
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
@@ -93,7 +93,7 @@ class GTFSFerrySensor(Entity):
         if len(self._current_data) > 0:
             timestamp = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time)
             minutes = due_in_minutes(timestamp)
-            _LOGGER.debug("TIMESTAMP {0}, due_in_minutes {1}".format(timestamp, minutes))
+            _LOGGER.debug("NOW {0} TIMESTAMP {1}, due_in_minutes {2}".format(dt_util.now().replace(tzinfo=None), timestamp, minutes))
         else:
             minutes = '-'
         return minutes
