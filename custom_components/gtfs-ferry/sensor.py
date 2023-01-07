@@ -36,7 +36,7 @@ ATTR_DUE_AT = "Departure scheduled at"
 ATTR_DUE_IN_ACTUAL = "Departure actualy in"
 ATTR_DUE_AT_ACTUAL = "Departure actualy at"
 
-ATTR_NEXT_UP = "Next Service Departure"
+ATTR_NEXT_UP = "Next Service Departure in"
 ATTR_NEXT_UP_DUE_AT = "Next Service Departure at"
 ATTR_NEXT_UP_ACTUAL = "Next Service Departure actualy in"
 ATTR_NEXT_UP_DUE_AT_ACTUAL = "Next Service Departure actualy at"

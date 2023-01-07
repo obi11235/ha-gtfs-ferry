@@ -8,5 +8,5 @@
     "requirements": [
         "gtfs-realtime-bindings==0.0.5"
     ],
-    "version": "1.20230107.2"
+    "version": "1.20230107.3"
 }
