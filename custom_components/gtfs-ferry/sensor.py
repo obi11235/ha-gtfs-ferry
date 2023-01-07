@@ -31,7 +31,10 @@ CONF_STOP_ID = 'stop_id'
 
 DEFAULT_ICON = 'mdi:ferry'
 
-# ATTR_NUM_BIKES_AVAILABLE = 'num bikes available'
+ATTR_DUE_IN = "Due in"
+ATTR_DUE_AT = "Due at"
+ATTR_NEXT_UP = "Next Service"
+ATTR_NEXT_UP_DUE_IN = "Next Service Due in"
 
 MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=60)
 TIME_STR_FORMAT = "%H:%M"
@@ -91,9 +94,7 @@ class GTFSFerrySensor(Entity):
     def state(self):
         """Return the state of the sensor."""
         if len(self._current_data) > 0:
-            timestamp = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time)
-            minutes = due_in_minutes(timestamp)
-            _LOGGER.debug("NOW {0} TIMESTAMP {1}, due_in_minutes {2}".format(dt_util.now().replace(tzinfo=None), timestamp, minutes))
+            minutes = due_in_minutes(datetime.combine(self._current_data[0].date, self._current_data[0].departure_time))
         else:
             minutes = '-'
         return minutes
@@ -101,12 +102,13 @@ class GTFSFerrySensor(Entity):
     @property
     def extra_state_attributes(self):
         """Return the state attributes."""
-        # attrs = {
-        #     ATTR_STATION_NAME: self.data.info[self._station_id].name,
-        # }
         attrs = {}
         if len(self._current_data) > 0:
-            attrs['Due at'] = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time).strftime('%I:%M %p') if len(self._current_data) > 0 else '-'
+            attrs[ATTR_DUE_IN] = self.state
+            attrs[ATTR_DUE_AT] = datetime.combine(self._current_data[0].date, self._current_data[0].departure_time).strftime('%I:%M %p') if len(self._current_data) > 0 else '-'
+        if len(self._current_data) > 1:
+            attrs[ATTR_NEXT_UP] = due_in_minutes(datetime.combine(self._current_data[1].date, self._current_data[1].departure_time)) if len(self._current_data) > 1 else '-'
+            attrs[ATTR_NEXT_UP_DUE_IN] = datetime.combine(self._current_data[1].date, self._current_data[1].departure_time).strftime('%I:%M %p') if len(self._current_data) > 1 else '-'
         return attrs
 
     @property
